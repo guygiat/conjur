@@ -266,6 +266,27 @@ module Loader
       end
     end
 
+    class PolicyFactory < Record
+      def_delegators :@policy_object, :base, :template
+
+      def create!
+        super
+
+        base_policy_id = find_resourceid(base.resourceid)
+
+        ::PolicyFactory.create(
+          role_id: roleid,
+          policy_id: policy_id,
+          base_policy_id: base_policy_id,
+          template: template
+          )
+      end
+
+      def identifier
+        self.roleid.split(':', 3)[2]
+      end
+    end
+
     # Deletions
 
     class Deletion < Types::Base

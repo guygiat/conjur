@@ -1,0 +1,16 @@
+- !policy certificates
+
+- !policy-factory
+  id: certificates
+  annotations:
+    description: Policy factory for server certificates
+  base: !policy certificates
+  template: | # Note the content below is a string, not a list
+    - !policy
+      id: ${role.identifier}
+      body:
+      - !variable
+        id: ssl-private-key
+        provisioner: rsa-private-key
+        annotations:
+          rsa-private-key-format: pem

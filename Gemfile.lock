@@ -9,8 +9,8 @@ GIT
 
 GIT
   remote: https://github.com/cyberark/conjur-policy-parser.git
-  revision: 7a8ad23ef2278fb2083994c0fd92fc2973560bac
-  branch: master
+  revision: d3f027a5683d1e2cabae018183681d9d1a7021d6
+  branch: policy-factory
   specs:
     conjur-policy-parser (3.0.4)
       activesupport (>= 4.2)

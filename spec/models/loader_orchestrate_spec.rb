@@ -73,6 +73,10 @@ describe Loader::Orchestrate do
         replace_policy_with 'simple.yml'
         verify_data 'updated/simple.txt'
       end
+      it "creates a policy factory" do
+        load_policy_update 'policy_factory.yml'
+        verify_data 'updated/policy_factory.txt'
+      end
       it "creates a host factory" do
         replace_policy_with 'host_factory.yml'
         verify_data 'updated/host_factory.txt'
