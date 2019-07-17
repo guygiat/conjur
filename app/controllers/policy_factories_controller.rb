@@ -1,0 +1,78 @@
+# frozen_string_literal: true
+
+# This controller is responsible for creating host records using
+# host factory tokens for authorization.
+class PolicyFactoriesController < ApplicationController
+  include BodyParser
+  include FindResource
+  include AuthorizeResource
+
+  RenderContext = Struct.new(:role, :params) do
+    def get_binding
+      binding
+    end
+  end
+
+  # Ask the host factory to create a host.
+  # This requires the host factory's token in the Authorization header.
+  def create_policy
+    authorize :execute
+
+    factory = ::PolicyFactory[resource_id]
+
+    template = ERB.new(factory.template)
+
+    p params
+
+    context = RenderContext.new(current_user, params)
+    policy_text = template.result(context.get_binding)
+
+    response = load_policy(factory.base_policy, policy_text) unless dry_run?
+    
+    response = {
+      policy_text: policy_text,
+      load_to: factory.base_policy.identifier,
+      dry_run: dry_run?,
+      response: response
+    }
+    render json: response, status: :created
+  end
+
+  protected
+
+  def dry_run?
+    params[:dry_run].present?
+  end
+
+  def resource_kind
+    'policy_factory'
+  end
+
+  def load_policy(load_to, policy_text)
+
+    policy_version = PolicyVersion.new(
+      role: current_user, 
+      policy: load_to, 
+      policy_text: policy_text
+    )
+    policy_version.perform_automatic_deletion = false
+    policy_version.delete_permitted = false
+    policy_version.update_permitted = true
+    policy_version.save
+    loader = Loader::Orchestrate.new policy_version
+    loader.load
+
+    created_roles = loader.new_roles.select do |role|
+      %w(user host).member?(role.kind)
+    end.inject({}) do |memo, role|
+      credentials = Credentials[role: role] || Credentials.create(role: role)
+      memo[role.id] = { id: role.id, api_key: credentials.api_key }
+      memo
+    end
+
+    {
+      created_roles: created_roles,
+      version: policy_version.version
+    }
+  end
+end
