@@ -69,6 +69,7 @@ gem 'mini_racer'
 gem 'net-ldap'
 # gem 'sass-rails'
 gem 'uglifier'
+gem 'multipart-parser'
 
 # for AWS rotator
 gem 'aws-sdk-iam', require: false
