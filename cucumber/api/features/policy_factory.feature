@@ -11,7 +11,16 @@ Feature: Policy Factory
       id: certificates
       base: !policy certificates
       template: |
-        - !variable <%=role.identifier %>
+        - !variable
+          id: <%=role.identifier %>
+          annotations:
+            provision/provisioner: context
+            provision/context/parameter: value
+        
+        - !permit
+          role: !user /<%=role.identifier%>
+          resource: !variable <%=role.identifier%>
+          privileges: [ read, execute ]
 
     - !policy annotated-variables
     - !policy-factory
@@ -46,7 +55,7 @@ Feature: Policy Factory
     Then the JSON should be:
     """
     {
-      "policy_text": "- !variable alice\n",
+      "policy_text": "- !variable\n  id: alice\n  annotations:\n    provision/provisioner: context\n    provision/context/parameter: value\n\n- !permit\n  role: !user /alice\n  resource: !variable alice\n  privileges: [ read, execute ]\n",
       "load_to": "certificates",
       "dry_run": true,
       "response": null
@@ -55,12 +64,12 @@ Feature: Policy Factory
 
   Scenario: Load policy using a factory
     Given I login as "alice"
-
-    When I POST "/policy_factories/cucumber/certificates"
+    And I set the "Content-Type" header to "multipart/form-data; boundary=demo"
+    When I successfully POST "/policy_factories/cucumber/certificates" with body from file "policy-factory-context.txt"
     Then the JSON should be:
     """
     {
-      "policy_text": "- !variable alice\n",
+      "policy_text": "- !variable\n  id: alice\n  annotations:\n    provision/provisioner: context\n    provision/context/parameter: value\n\n- !permit\n  role: !user /alice\n  resource: !variable alice\n  privileges: [ read, execute ]\n",
       "load_to": "certificates",
       "dry_run": false,
       "response": {
@@ -69,6 +78,11 @@ Feature: Policy Factory
         "version": 1
       }
     }
+    """
+    And I successfully GET "/secrets/cucumber/variable/certificates/alice"
+    Then the JSON should be:
+    """
+    "test value"
     """
 
   Scenario: Load parameterized policy using a factory

@@ -22,12 +22,10 @@ class PolicyFactoriesController < ApplicationController
 
     template = ERB.new(factory.template)
 
-    p params
-
     context = RenderContext.new(current_user, params)
     policy_text = template.result(context.get_binding)
 
-    response = load_policy(factory.base_policy, policy_text) unless dry_run?
+    response = load_policy(factory.base_policy, policy_text, policy_context) unless dry_run?
     
     response = {
       policy_text: policy_text,
@@ -40,6 +38,19 @@ class PolicyFactoriesController < ApplicationController
 
   protected
 
+  def policy_context
+    multipart_data.reject { |k,v| k == :policy }
+  end
+
+  def multipart_data
+    return {} if request.raw_post.empty?
+
+    @multipart_data ||= Util::Multipart.parse_multipart_data(
+      request.raw_post,
+      content_type: request.headers['CONTENT_TYPE']
+    )
+  end
+
   def dry_run?
     params[:dry_run].present?
   end
@@ -48,7 +59,7 @@ class PolicyFactoriesController < ApplicationController
     'policy_factory'
   end
 
-  def load_policy(load_to, policy_text)
+  def load_policy(load_to, policy_text, policy_context)
 
     policy_version = PolicyVersion.new(
       role: current_user, 
@@ -59,7 +70,7 @@ class PolicyFactoriesController < ApplicationController
     policy_version.delete_permitted = false
     policy_version.update_permitted = true
     policy_version.save
-    loader = Loader::Orchestrate.new policy_version
+    loader = Loader::Orchestrate.new(policy_version, context: policy_context)
     loader.load
 
     created_roles = loader.new_roles.select do |role|
