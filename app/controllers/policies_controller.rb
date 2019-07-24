@@ -78,35 +78,14 @@ class PoliciesController < RestController
   end
 
   def multipart_data
-    @multipart_data ||= parse_multipart_data
-  end
-
-  def parse_multipart_data
-    boundary = MultipartParser::Reader::extract_boundary_value(request.headers['CONTENT_TYPE'])
-    reader = MultipartParser::Reader.new(boundary)
-
-    parts={}
-
-    reader.on_part do |part|
-      pn = part.name.to_sym
-      part.on_data do |partial_data|
-        if parts[pn].nil?
-          parts[pn] = partial_data
-        else
-          parts[pn] = [parts[pn]] unless parts[pn].kind_of?(Array)
-          parts[pn] << partial_data
-        end
-      end
+    if 'multipart/form-data' == request.content_type
+      @multipart_data ||= Util::Multipart.parse_multipart_data(
+        request.raw_post,
+        content_type: request.headers['CONTENT_TYPE']
+      )
+    else
+      {}
     end
-
-    reader.on_error do |err|
-      $stderr.puts("Error: #{err}")
-    end
-
-    reader.write request.raw_post.encode(crlf_newline: true)
-    reader.ended? or raise Exception, 'truncated multipart message'
-
-    parts
   end
 
   def find_or_create_root_policy

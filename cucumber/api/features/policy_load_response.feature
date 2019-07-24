@@ -21,22 +21,7 @@ Feature: Policy load response
   @logged-in-admin
   Scenario: Load policy using multipart data
     Given I set the "Content-Type" header to "multipart/form-data; boundary=demo"
-    When I successfully POST "/policies/cucumber/policy/root" with body:
-    """
-    --demo
-    content-disposition: form-data; name="policy"
-
-    - !variable
-      id: provisioned-var
-      annotations:
-        provision/provisioner: context
-        provision/context/parameter: value
-    --demo
-    content-disposition: form-data; name="value"
-
-    my test value
-    --demo--
-    """
+    When I successfully POST "/policies/cucumber/policy/root" with body from file "policy-load-multipart.txt"
     And I successfully GET "/secrets/cucumber/variable/provisioned-var"
     Then the JSON should be:
     """
