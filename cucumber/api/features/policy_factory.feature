@@ -22,6 +22,11 @@ Feature: Policy Factory
           resource: !variable <%=role.identifier%>
           privileges: [ read, execute ]
 
+    - !policy-factory
+      id: root-factory
+      template: |
+        - !variable created-in-root 
+
     - !policy annotated-variables
     - !policy-factory
       id: parameterized
@@ -112,3 +117,8 @@ Feature: Policy Factory
     Given I login as "bob"
     When I POST "/policy_factories/cucumber/parameterized"
     Then the HTTP response status code is 403
+
+  Scenario: A policy factory without a base loads into the root policy
+    Given I POST "/policy_factories/cucumber/root-factory"
+    And the HTTP response status code is 201
+    Then I successfully GET "/resources/cucumber/variable/created-in-root"

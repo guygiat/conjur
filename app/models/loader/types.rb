@@ -276,7 +276,7 @@ module Loader
       def create!
         super
 
-        base_policy_id = find_resourceid(base.resourceid)
+        base_policy_id = find_resourceid(base_resource_id)
 
         ::PolicyFactory.create(
           role_id: roleid,
@@ -288,6 +288,12 @@ module Loader
 
       def identifier
         self.roleid.split(':', 3)[2]
+      end
+
+      private
+      
+      def base_resource_id
+        base&.resourceid || "#{policy_object.account}:policy:root"
       end
     end
 
