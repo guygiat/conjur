@@ -3,7 +3,6 @@
 # This controller is responsible for creating host records using
 # host factory tokens for authorization.
 class PolicyFactoriesController < ApplicationController
-  include BodyParser
   include FindResource
   include AuthorizeResource
 
@@ -34,6 +33,33 @@ class PolicyFactoriesController < ApplicationController
       response: response
     }
     render json: response, status: :created
+  end
+
+  def get_template
+    authorize :read
+
+    factory = ::PolicyFactory[resource_id]
+
+    response = {
+      body: factory.template
+    }
+
+    render json: response
+  end
+
+  def update_template
+    authorize :update
+
+    factory = ::PolicyFactory[resource_id]
+
+    factory.template = request.body.read
+    factory.save
+
+    response = {
+      body: factory.template
+    }
+
+    render json: response, status: :accepted
   end
 
   protected

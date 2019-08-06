@@ -22,6 +22,14 @@ Feature: Policy Factory
           resource: !variable <%=role.identifier%>
           privileges: [ read, execute ]
 
+    - !policy edit-template
+    - !policy-factory
+      id: edit-template
+      owner: !user alice
+      base: !policy edit-template
+      template: |
+        - !variable to-be-edited
+
     - !policy-factory
       id: root-factory
       template: |
@@ -122,3 +130,34 @@ Feature: Policy Factory
     Given I POST "/policy_factories/cucumber/root-factory"
     And the HTTP response status code is 201
     Then I successfully GET "/resources/cucumber/variable/created-in-root"
+
+  Scenario: I retrieve the policy factory template through the API
+    Given I login as "alice"
+    When I GET "/policy_factories/cucumber/edit-template/template"
+    Then the HTTP response status code is 200
+    And the JSON response should be:
+    """
+    {
+      "body": "- !variable to-be-edited\n"
+    }
+    """
+
+  Scenario: I update the policy factory template through the API
+    Given I login as "alice"
+    When I PUT "/policy_factories/cucumber/edit-template/template" with body:
+    """
+    - !variable replaced
+    """
+    Then the HTTP response status code is 202
+    When I GET "/policy_factories/cucumber/edit-template/template"
+    Then the JSON response should be:
+    """
+    {
+      "body": "- !variable replaced"
+    }
+    """
+
+  Scenario: I don't have permission to retrieve the policy factory template
+    Given I login as "bob"
+    When I GET "/policy_factories/cucumber/edit-template/template"
+    Then the HTTP response status code is 404
