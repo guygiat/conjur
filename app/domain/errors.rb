@@ -364,6 +364,22 @@ module Errors
         code: "CONJ00069E"
       )
     end
+
+    module Provisioning
+      module ProvisionerClass
+        NotNamedAuthenticator = ::Util::TrackableErrorClass.new(
+          msg: "'{0-provisioner-name}' is not a valid provisioner name. " \
+            "The actual class implementing the provisioner must be named 'Provisioner'",
+          code: "CONJ00046E"
+        )
+
+        MissingProvisionMethod = ::Util::TrackableErrorClass.new(
+          msg: "'{0-provisioner-name}' is not a valid provisioner because " \
+            "it does not have a `:provision(input)` method.",
+          code: "CONJ00047E"
+        )
+      end
+    end
   end
 
   module Util
