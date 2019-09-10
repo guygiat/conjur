@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
+require 'openssl'
+
 # The context provisioner provides secret values directly
 # from the requests context (additional parameters provided
 # alongside the policy document).
 #
 module Provisioning
-  module Context
+  module RSA
 
     class Provisioner
       def provision(input)
-        parameter = input.resource.annotation('provision/context/parameter')
-        input.context[parameter.to_sym]
+        length =  (input.resource.annotation('provision/rsa/length') || 2048).to_i
+        key = OpenSSL::PKey::RSA.new length
+        key.to_pem
       end
     end
   end
