@@ -12,20 +12,23 @@ class PolicyFactoriesController < ApplicationController
     end
   end
 
-  # Ask the host factory to create a host.
-  # This requires the host factory's token in the Authorization header.
   def create_policy
     authorize :execute
 
     factory = ::PolicyFactory[resource_id]
 
-    template = ERB.new(factory.template)
+    template = Conjur::PolicyParser::YAML::Loader.load(factory.template)
 
     context = RenderContext.new(current_user, params)
-    policy_text = template.result(context.get_binding)
+
+    template.each do |record|
+      update_record(record, context)
+    end
+
+    policy_text = template.to_yaml
 
     response = load_policy(factory.base_policy, policy_text, policy_context) unless dry_run?
-    
+
     response = {
       policy_text: policy_text,
       load_to: factory.base_policy.identifier,
@@ -33,6 +36,57 @@ class PolicyFactoriesController < ApplicationController
       response: response
     }
     render json: response, status: :created
+  end
+
+  def update_record(record, context)
+    record.class.fields.each do |name, _type|
+      record_value = record.send(name)
+      
+      if record_value.class < Conjur::PolicyParser::Types::Base
+        update_record(record_value, context)
+      elsif record_value.is_a?(Array)
+        update_array(record_value, context)
+      elsif record_value.is_a?(Hash)
+        update_hash(record_value, context)
+      elsif record_value.is_a?(String)
+        rendered_value = ERB.new(record_value).result(context.get_binding)
+        record.send("#{name}=", rendered_value)
+      end
+    end
+
+    record
+  end
+  
+  def update_array(arr, context)
+    arr.map! do |item|
+      if item.class < Conjur::PolicyParser::Types::Base
+        update_record(item, context)
+      elsif item.is_a?(Array)
+        update_array(item, context)
+      elsif item.is_a?(Hash)
+        update_hash(item, context)
+      elsif item.is_a?(String)
+        ERB.new(item).result(context.get_binding)
+      else
+        item
+      end
+    end
+
+    arr
+  end
+
+  def update_hash(hsh, context)
+    hsh.each do |k, val|
+      if val.class < Conjur::PolicyParser::Types::Base
+        update_record(val, context)
+      elsif val.is_a?(Array)
+        update_array(val, context)
+      elsif val.is_a?(Hash)
+        update_hash(val, context)
+      elsif val.is_a?(String)
+        hsh[k] = ERB.new(val).result(context.get_binding)
+      end
+    end
   end
 
   def get_template

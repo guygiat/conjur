@@ -4,22 +4,24 @@ Feature: Policy Factory
     Given I am the super-user
     And I create a new user "alice"
     And I create a new user "bob"
-    And I successfully PUT "/policies/cucumber/policy/root" with body:
+    And I successfully PATCH "/policies/cucumber/policy/root" with body:
     """
     - !policy certificates
     - !policy-factory
       id: certificates
       base: !policy certificates
-      template: |
+      template:
         - !variable
-          id: <%=role.identifier %>
+          id: <%=role.identifier%>
           annotations:
             provision/provisioner: context
             provision/context/parameter: value
-        
+
         - !permit
-          role: !user /<%=role.identifier%>
-          resource: !variable <%=role.identifier%>
+          role: !user
+            id: /<%=role.identifier%>
+          resource: !variable
+            id: <%=role.identifier%>
           privileges: [ read, execute ]
 
     - !policy edit-template
@@ -27,19 +29,19 @@ Feature: Policy Factory
       id: edit-template
       owner: !user alice
       base: !policy edit-template
-      template: |
+      template:
         - !variable to-be-edited
 
     - !policy-factory
       id: root-factory
-      template: |
+      template:
         - !variable created-in-root 
 
     - !policy annotated-variables
     - !policy-factory
       id: parameterized
       base: !policy annotated-variables
-      template: |
+      template:
         - !variable
           id: <%=role.identifier%>
           annotations:
@@ -68,7 +70,7 @@ Feature: Policy Factory
     Then the JSON should be:
     """
     {
-      "policy_text": "- !variable\n  id: alice\n  annotations:\n    provision/provisioner: context\n    provision/context/parameter: value\n\n- !permit\n  role: !user /alice\n  resource: !variable alice\n  privileges: [ read, execute ]\n",
+      "policy_text": "---\n- !variable\n  id: alice\n  annotations:\n    provision/provisioner: context\n    provision/context/parameter: value\n- !permit\n  privilege:\n  - read\n  - execute\n  role: !user\n    id: \"/alice\"\n  resource: !variable\n    id: alice\n",
       "load_to": "certificates",
       "dry_run": true,
       "response": null
@@ -82,7 +84,7 @@ Feature: Policy Factory
     Then the JSON should be:
     """
     {
-      "policy_text": "- !variable\n  id: alice\n  annotations:\n    provision/provisioner: context\n    provision/context/parameter: value\n\n- !permit\n  role: !user /alice\n  resource: !variable alice\n  privileges: [ read, execute ]\n",
+      "policy_text": "---\n- !variable\n  id: alice\n  annotations:\n    provision/provisioner: context\n    provision/context/parameter: value\n- !permit\n  privilege:\n  - read\n  - execute\n  role: !user\n    id: \"/alice\"\n  resource: !variable\n    id: alice\n",
       "load_to": "certificates",
       "dry_run": false,
       "response": {
@@ -105,7 +107,7 @@ Feature: Policy Factory
     Then the JSON should be:
     """
     {
-      "policy_text": "- !variable\n  id: alice\n  annotations:\n    description: first description\n",
+      "policy_text": "---\n- !variable\n  id: alice\n  annotations:\n    description: first description\n",
       "load_to": "annotated-variables",
       "dry_run": false,
       "response": {
@@ -138,7 +140,7 @@ Feature: Policy Factory
     And the JSON response should be:
     """
     {
-      "body": "- !variable to-be-edited\n"
+      "body": "---\n- !variable\n  id: to-be-edited\n"
     }
     """
 
@@ -146,14 +148,14 @@ Feature: Policy Factory
     Given I login as "alice"
     When I PUT "/policy_factories/cucumber/edit-template/template" with body:
     """
-    - !variable replaced
+    ---\n- !variable replaced
     """
     Then the HTTP response status code is 202
     When I GET "/policy_factories/cucumber/edit-template/template"
     Then the JSON response should be:
     """
     {
-      "body": "- !variable replaced"
+      "body": "---\\n- !variable replaced"
     }
     """
 

@@ -32,7 +32,7 @@ RESOURCE_ID                                  | NAME        | VALUE              
 rspec:policy_factory:the-policy/certificates | description | Policy factory for server certificates | rspec:policy:the-policy
 
 policy_factories
-ROLE_ID                                      | BASE_POLICY_ID                       | TEMPLATE                                                                                             | POLICY_ID              
----------------------------------------------|--------------------------------------|------------------------------------------------------------------------------------------------------|------------------------
-rspec:policy_factory:the-policy/certificates | rspec:policy:the-policy/certificates | - !policy   id: ${role.identifier}   body:   - !variable     id: ssl-private-key     provisioner:... | rspec:policy:the-policy
+ROLE_ID                                      | BASE_POLICY_ID                       | TEMPLATE                                                                                  | POLICY_ID              
+---------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------------|------------------------
+rspec:policy_factory:the-policy/certificates | rspec:policy:the-policy/certificates | --- - !policy   id: "<%=role.identifier%>"   body:   - !variable     id: ssl-private-key  | rspec:policy:the-policy
 

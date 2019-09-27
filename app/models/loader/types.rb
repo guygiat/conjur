@@ -282,7 +282,7 @@ module Loader
           role_id: roleid,
           policy_id: policy_id,
           base_policy_id: base_policy_id,
-          template: template
+          template: template.to_yaml
           )
       end
 
