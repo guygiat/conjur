@@ -24,6 +24,27 @@ Feature: Policy Factory
             id: <%=role.identifier%>
           privileges: [ read, execute ]
 
+    - !policy nested-policy
+    - !policy-factory
+      id: nested-policy
+      owner: !user alice
+      base: !policy nested-policy
+      template:
+        - !host
+          id: outer-<%=role.identifier%>
+          owner: !user /<%=role.identifier%>
+          annotations:
+            outer: <%=role.identifier%>
+
+        - !policy
+          id: inner
+          owner: !user /<%=role.identifier%>
+          body:
+            - !host
+              id: inner-<%=role.identifier%>
+              annotations:
+                inner: <%=role.identifier%>
+
     - !policy edit-template
     - !policy-factory
       id: edit-template
@@ -76,6 +97,12 @@ Feature: Policy Factory
       "response": null
     }
     """
+    
+  Scenario: Nested policy within factory template
+    Given I login as "alice"
+    When I successfully POST "/policy_factories/cucumber/nested-policy"
+    Then I successfully GET "/resources/cucumber/host/nested-policy/outer-alice"
+    Then I successfully GET "/resources/cucumber/host/nested-policy/inner/inner-alice"
 
   Scenario: Load policy using a factory
     Given I login as "alice"

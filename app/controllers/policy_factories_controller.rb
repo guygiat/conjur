@@ -21,9 +21,7 @@ class PolicyFactoriesController < ApplicationController
 
     context = RenderContext.new(current_user, params)
 
-    template.each do |record|
-      update_record(record, context)
-    end
+    template = update_array(template, context)
 
     policy_text = template.to_yaml
 
@@ -39,7 +37,13 @@ class PolicyFactoriesController < ApplicationController
   end
 
   def update_record(record, context)
-    record.class.fields.each do |name, _type|
+    fields = record.class.fields.keys
+
+    if record.is_a?(Conjur::PolicyParser::Types::Policy)
+      fields << 'body'
+    end
+
+    fields.each do |name|
       record_value = record.send(name)
       
       if record_value.class < Conjur::PolicyParser::Types::Base
