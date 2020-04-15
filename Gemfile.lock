@@ -1,4 +1,13 @@
 GIT
+  remote: https://github.com/conjurinc/conjur-policy-parser.git
+  revision: bbe89826fd6ba9039b2b07640875b41f0062978e
+  branch: policy-factory
+  specs:
+    conjur-policy-parser (3.0.4)
+      activesupport (>= 4.2)
+      safe_yaml
+
+GIT
   remote: https://github.com/cyberark/conjur-api-ruby.git
   revision: 58df243255fbd1858c493165919740c4abf7e980
   branch: policy-factory
@@ -458,7 +467,7 @@ DEPENDENCIES
   conjur-api!
   conjur-cli (~> 6.1)
   conjur-debify
-  conjur-policy-parser (>= 3.0.4)!
+  conjur-policy-parser (>= 3.0.3)!
   conjur-rack (~> 4)
   conjur-rack-heartbeat
   csr
