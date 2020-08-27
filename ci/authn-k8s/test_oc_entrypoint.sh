@@ -53,6 +53,9 @@ export TEMPLATE_TAG="$PLATFORM."
 export API_VERSION=v1
 
 function main() {
+  sudo apt update
+  sudo apt install jq
+
   sourceFunctions
   renderResourceTemplates
   
@@ -83,8 +86,7 @@ function renderResourceTemplates() {
 
 function createNamespace() {
   # clean ups namespaces older than minutes or seconds
-  old_namespaces=$(kubectl get namespaces | awk '$1 ~ /test-/ && $3 !~ /[m|s]/ { print $1; }')
-  [ ! -z ${old_namespaces} ] && kubectl delete --ignore-not-found=true namespaces ${old_namespaces}
+  kubectl get namespaces | awk '$1 ~ /test-/ && $3 !~ /[m|s]/ { print $1; }' | xargs kubectl delete --ignore-not-found=true namespaces
 
   oc new-project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
   oc project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
@@ -197,7 +199,7 @@ function runTests() {
 }
 
 retrieve_pod() {
-  oc get pods -l app=$1 -o=jsonpath='{.items[].metadata.name}'
+  oc get pods -l app=$1 -o json | jq -r '.items[] | [.metadata.name]'
 }
 
 main

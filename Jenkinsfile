@@ -30,7 +30,7 @@ pipeline {
 
     stage('Run Tests OCP 4.3') {
        steps {
-        sh 'cd ci/authn-k8s && summon ./test.sh openshift43'
+        sh 'cd ci/authn-k8s && summon --environment openshift43 ./test.sh openshift43'
        }
     }
   }

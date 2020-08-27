@@ -39,9 +39,9 @@ function setupTestEnvironment() {
       ;;
     openshift*)
       export DOCKER_REGISTRY_PATH="$OPENSHIFT_REGISTRY_URL/$CONJUR_AUTHN_K8S_TEST_NAMESPACE"
-      echo "dvir1 $OPENSHIFT_REGISTRY_URL"
-      echo "dvir2 $CONJUR_AUTHN_K8S_TEST_NAMESPACE"
-      echo "dvir3 $DOCKER_REGISTRY_PATH"
+      echo "dvir1 $K8S_VERSION"
+      echo "dvir2 $OPENSHIFT_CLI_URL"
+      echo "dvir3 $OPENSHIFT_PASSWORD"
       ;;
     *)
       echo "'$PLATFORM' is not a supported test platform"
@@ -131,6 +131,7 @@ function test_openshift() {
     -e FOLLOWER_SEED="" \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v "$PWD":/src \
-    $K8S_CONJUR_DEPLOY_TESTER_IMAGE bash -c "./test_oc_entrypoint.sh"
+    $CONJUR_AUTHN_K8S_TESTER_TAG bash -c "./test_oc_entrypoint.sh"
+}
 
 main
