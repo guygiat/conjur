@@ -53,8 +53,8 @@ export TEMPLATE_TAG="$PLATFORM."
 export API_VERSION=v1
 
 function main() {
-  sudo apt update
-  sudo apt install -y jq
+  #sudo apt update
+  #sudo apt install -y jq
 
   sourceFunctions
   renderResourceTemplates
@@ -199,7 +199,8 @@ function runTests() {
 }
 
 retrieve_pod() {
-  oc get pods -l app=$1 -o json | jq -r '.items[] | [.metadata.name]'
+  #oc get pods -l app=$1 -o json | jq -r '.items[] | [.metadata.name]'
+    oc get pods -l app=$1 -o=jsonpath='{.items[].metadata.name}'
 }
 
 main
