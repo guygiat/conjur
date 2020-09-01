@@ -54,7 +54,7 @@ export API_VERSION=v1
 
 function main() {
   sudo apt update
-  sudo apt install jq
+  sudo apt install -y jq
 
   sourceFunctions
   renderResourceTemplates
