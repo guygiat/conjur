@@ -107,8 +107,13 @@ function test_gke() {
 
 function test_openshift() {
   docker run --rm \
-    -e DEPLOY_MASTER_CLUSTER=true \
-    -e TEST_PLATFORM \
+    -e CONJUR_AUTHN_K8S_TAG \
+    -e CONJUR_TEST_AUTHN_K8S_TAG \
+    -e INVENTORY_TAG \
+    -e NGINX_TAG \
+    -e CONJUR_AUTHN_K8S_TEST_NAMESPACE \
+    -e PLATFORM \
+    -e K8S_VERSION \
     -e OPENSHIFT_URL \
     -e OPENSHIFT_REGISTRY_URL \
     -e OPENSHIFT_USERNAME \
