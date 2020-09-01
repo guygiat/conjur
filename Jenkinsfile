@@ -166,6 +166,14 @@ pipeline {
         stage('Audit') {
           steps { sh 'ci/test rspec_audit'}
         }
+        stage('Policy Parser Gem') {
+          steps {
+            dir('gems/policy-parser') {
+              sh './test.sh'
+            }
+            junit 'gems/policy-parser/spec/reports/*.xml'
+          }
+        }
       }
     }
 
