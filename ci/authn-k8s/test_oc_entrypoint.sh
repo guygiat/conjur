@@ -41,11 +41,11 @@ function finish {
     touch "output/$PLATFORM-authn-k8s-logs.txt"  # so Jenkins artifact collection doesn't fail
   }
 
-  echo 'Removing namespace $CONJUR_AUTHN_K8S_TEST_NAMESPACE'
-  echo '-----'
+  #echo 'Removing namespace $CONJUR_AUTHN_K8S_TEST_NAMESPACE'
+  #echo '-----'
 
-  oc adm policy remove-scc-from-user anyuid -z default
-  oc --ignore-not-found=true delete project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
+  #oc adm policy remove-scc-from-user anyuid -z default
+  #oc --ignore-not-found=true delete project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
 }
 trap finish EXIT
 
@@ -126,7 +126,11 @@ function launchConjurMaster() {
     oc create -f -
 
   conjur_pod=$(retrieve_pod conjur-authn-k8s)
-  
+
+  echo "dvir"
+  sleep 10
+  oc describe po $conjur_pod | grep Status:
+  echo oc describe po $conjur_pod | grep Status:
   wait_for_it 300 "oc describe po $conjur_pod | grep Status: | grep -q Running"
 
   # wait for the 'conjurctl server' entrypoint to finish
