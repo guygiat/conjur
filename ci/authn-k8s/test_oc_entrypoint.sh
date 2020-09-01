@@ -86,7 +86,7 @@ function renderResourceTemplates() {
 
 function createNamespace() {
   # clean ups namespaces older than minutes or seconds
-  kubectl get namespaces | awk '$1 ~ /test-/ && $3 !~ /[m|s]/ { print $1; }' | xargs kubectl delete --ignore-not-found=true namespaces
+  kubectl get namespaces | awk '$1 ~ /test-/ && $3 !~ /[m|s]/ { print $1; }' | xargs --no-run-if-empty kubectl delete --ignore-not-found=true namespaces
 
   oc new-project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
   oc project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
