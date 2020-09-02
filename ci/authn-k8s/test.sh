@@ -38,7 +38,7 @@ function setupTestEnvironment() {
       export DOCKER_REGISTRY_PATH="gcr.io/$GCLOUD_PROJECT_NAME"
       ;;
     openshift4*)
-      export DOCKER_REGISTRY_PATH="image-registry.openshift-image-registry.svc:5000/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
+      export DOCKER_REGISTRY_PATH="image-registry.openshift-image-registry.svc:5000/$CONJUR_AUTHN_K8S_TEST_NAMESPACE"
       ;;
     openshift*)
       export DOCKER_REGISTRY_PATH="$OPENSHIFT_REGISTRY_URL/$CONJUR_AUTHN_K8S_TEST_NAMESPACE"
