@@ -6,10 +6,19 @@
   - [Proposed Solution](#proposed-solution)
     - [User Experience](#user-experience)
     - [Functionality](#functionality)
-      - [Input Validation](#input-validation)
+      - [JSON Schema Management](#json-schema-management)
+        - [Creating and Updating JSON Schemas](#creating-and-updating-json-schemas)
+        - [Deleting JSON Schemas](#deleting-json-schemas)
+      - [Validating Variable Values Using a JSON Schema](#validating-variable-values-using-a-json-schema)
+        - [Creating and Updating Variables](#creating-and-updating-variables)
+        - [Deleting Variables](#deleting-variables)
       - [Secrets Encryption](#secrets-encryption)
       - [Built-in Schemas](#built-in-schemas)
       - [Automatic Permission Granting to Built-in Schemas](#automatic-permission-granting-to-built-in-schemas)
+    - [Out of Scope - Future Development](#out-of-scope---future-development)
+      - [Align Conjur Clients to a Single Variable Usage](#align-conjur-clients-to-a-single-variable-usage)
+      - [Align Conjur Rotators to a Single Variable Usage](#align-conjur-rotators-to-a-single-variable-usage)
+      - [Granular Updates of Variable Values](#granular-updates-of-variable-values)
   - [Main Advantages and Expected Value From This Proposal](#main-advantages-and-expected-value-from-this-proposal)
   - [Affected Areas](#affected-areas)
   - [Backwards Compatibility](#backwards-compatibility)
@@ -17,7 +26,6 @@
   - [Security](#security)
   - [Documentation](#documentation)
   - [Version Update](#version-update)
-  - [Future Work](#future-work)
   - [Delivery Plan](#delivery-plan)
     - [Minimal Functionality](#minimal-functionality)
     - [Extended Functionality](#extended-functionality)
@@ -74,7 +82,8 @@ Let's have a look at the following example:
   body:
   - !variable
     id: mysql-db-creds
-    schema: !variable /conjur/schemas/mysql-schema
+    annotations:
+      schema-reference: !variable /conjur/schemas/mysql-schema
 
   - !host my-app
   
@@ -91,12 +100,15 @@ And
   id: conjur/schemas
   body:
   - &schemas
-    - !variable mysql-schema
-  
+    - !variable
+      id: mysql-schema
+      annotations:
+        schema: true
+
   - !permit
     role: !group /conjur/all
     privileges: [ read,execute ]
-    resource: !variable *schemas
+    resource: *schemas
 ```
 
 In the example above, the `/conjur/schemas/mysql-schema` variable will be updated with the following value:
@@ -151,9 +163,33 @@ And the `mysql-db-creds` variable could be updated with the following value:
 
 ### Functionality
 
-#### Input Validation
+#### JSON Schema Management
 
-Conjur will validate the variable content, using the JSON schema that is specified in the `schema` attribure of that variable.
+JSON schemas are variables that have the following annotation:
+
+```yaml
+schema: true
+```
+
+##### Creating and Updating JSON Schemas
+
+When creating or updating a JSON schema, the user will create a variable and annotated it as a JSON schema (schema: true). Then Conjur will validate the variable content, to ensure it's a valid JSON schema. A proper error message will be given if the input is not a valid JSON schema.
+
+##### Deleting JSON Schemas
+
+When deleting a JSON schema variable, if there are existing variables with references to that deleted JSON schema, the references will be automatically removed. Therefore these existing variables will be left as general variables with no schema validation.
+
+#### Validating Variable Values Using a JSON Schema
+
+Variables that their content is validated by a JSON schema have the following annotation:
+
+```yaml
+schema-reference: !variable full-path-of-schema-variable
+```
+
+##### Creating and Updating Variables
+
+If a variable was annotated with a schema reference (schema-reference: schema-variable-name), then Conjur will validate the variable content, using the JSON schema that is specified in the `schema` attribure of that variable.
 
 For the example above, Conjur will use the JSON schema specified in `conjur/schemas/mysql-schema` to verify the content of `mysql-db-creds`. This verification includes:
 
@@ -170,6 +206,12 @@ For the example above, if the user would provide a string as the port value, the
 Message: Invalid type. Expected Integer but got String.
 Schema path: https://cyberark.com/mysql.schema.json#/properties/port/type
 ```
+
+At first stage, a user that wants to update a specific field within the JSON structure, will read the variable, change its value appropriately and call Conjur to update the variable. In a later stage, we will add support for updating specific fields directly through the variable API.
+
+##### Deleting Variables
+
+No changes in deletion of variables that are referenced to JSON schemas. The behavior remains the same as regular variables.
 
 #### Secrets Encryption
 
@@ -221,6 +263,20 @@ Usage example:
   resource: !variable my-var
 ```
 
+### Out of Scope - Future Development
+
+#### Align Conjur Clients to a Single Variable Usage
+
+Modify our examples and integrations, such as the Conjur Summon provider, to leverage this new single variable JSON structure, instead of multiple variables.
+
+#### Align Conjur Rotators to a Single Variable Usage
+
+Modify the existing Conjur rotators, to update a JSON structured variable.
+
+#### Granular Updates of Variable Values
+
+As a first step, updating a variable value means that the entire JSON structure should be written at once. In the future, for a granular update that would allow the user to update a specific field within the JSON structure. For example, if a variable contains a JSON with two fields: `username` and `password`, the variable API will be able to update one of the fields, without replacing the whole JSON.
+
 ## Main Advantages and Expected Value From This Proposal
 
 - We leverage a standard way to enforce the content of the variable, with a well known JSON schema.
@@ -237,7 +293,7 @@ Usage example:
 
 ## Backwards Compatibility
 
-Variables that do not have a link to a schema, will not enforce the content. Therefore, behavior of all existing variables and newly created variables without the schema attribute, will work the same as it has been working.
+Variables that do not have a reference to a schema, will not enforce the content. Therefore, behavior of all existing variables and newly created variables without the schema attribute, will work the same as it has been working.
 
 ## Performance
 
@@ -260,10 +316,6 @@ We will need to update the docs of this new functionality, under the policy mana
 
 This feature requires a Conjur release.
 
-## Future Work
-
-Modify our examples and integrations, such as the Conjur Summon provider, to leverage this new single variable JSON structure, instead of multiple variables.
-
 ## Delivery Plan
 
 ### Minimal Functionality
@@ -272,11 +324,12 @@ Includes variable content neforcement with JSON schema
 
 | Functionality                                                                                   | Dev    | Tests  |
 |-------------------------------------------------------------------------------------------------|--------|--------|
-| Adding a new `schema` attribute to the variables policy syntax                                  | 3 days | 3 days |
-| Adding JSON schema enforcement on variables                                                     | 5 days | 3 days |
+| Adding input validation to variables that will contain JSON schemas                             | 3 days | 3 days |
+| Adding input validation to variables that are referenced to JSON schemas                        | 5 days | 3 days |
+| Adding cascading annotation removal to variables that had references to deleted schemas         | 2 days | 3 days |
 | Documentation                                                                                   | 3 days | -      |
   
-**Total: 17 days**
+**Total: 22 days**
 
 ### Extended Functionality
 
@@ -284,8 +337,8 @@ Includes built-in JSON schemas, selective encryption of the secrets attributes i
 
 | Functionality                                                                                   | Dev    | Tests  |
 |-------------------------------------------------------------------------------------------------|--------|--------|
-| Adding built-in schemas to the database migration process                                        | 5 days | 2 days |
-| Adding built-in `all` group                                                                      | 2 days | 2 days |
+| Adding built-in schemas to the database migration process                                       | 5 days | 2 days |
+| Adding built-in `all` group                                                                     | 2 days | 2 days |
 | Every new role is automatically added to the `all` group                                        | 4 days | 2 days |
 | Change variable encryption to the secret attributes only, instead of the whole variable payload | 3 days | 2 days |
 | Documentation                                                                                   | 3 days | -      |
