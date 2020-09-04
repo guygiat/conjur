@@ -364,26 +364,26 @@ module Errors
         code: "CONJ00069E"
       )
     end
+  end
 
-    module Provisioning
-      ProvisionerNotFound = ::Util::TrackableErrorClass.new(
-        msg: "Provisioner '{0-provisioner-name}' is not implemented in Conjur",
-        code: "CONJ00048E"
+  module Provisioning
+    ProvisionerNotFound = ::Util::TrackableErrorClass.new(
+      msg: "Provisioner '{0-provisioner-name}' is not implemented in Conjur",
+      code: "CONJ00048E"
+    )
+
+    module ProvisionerClass
+      NotNamedAuthenticator = ::Util::TrackableErrorClass.new(
+        msg: "'{0-provisioner-name}' is not a valid provisioner name. " \
+          "The actual class implementing the provisioner must be named 'Provisioner'",
+        code: "CONJ00046E"
       )
 
-      module ProvisionerClass
-        NotNamedAuthenticator = ::Util::TrackableErrorClass.new(
-          msg: "'{0-provisioner-name}' is not a valid provisioner name. " \
-            "The actual class implementing the provisioner must be named 'Provisioner'",
-          code: "CONJ00046E"
-        )
-
-        MissingProvisionMethod = ::Util::TrackableErrorClass.new(
-          msg: "'{0-provisioner-name}' is not a valid provisioner because " \
-            "it does not have a `:provision(input)` method.",
-          code: "CONJ00047E"
-        )
-      end
+      MissingProvisionMethod = ::Util::TrackableErrorClass.new(
+        msg: "'{0-provisioner-name}' is not a valid provisioner because " \
+          "it does not have a `:provision(input)` method.",
+        code: "CONJ00047E"
+      )
     end
   end
 

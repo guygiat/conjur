@@ -10,7 +10,7 @@ module Provisioning
 
   Provision = CommandClass.new(
     dependencies: {
-      audit_event:            ::Authentication::AuditEvent.new
+      audit_log:                           ::Audit.logger
     },
     inputs:       %i(provision_input provisioners)
   ) do

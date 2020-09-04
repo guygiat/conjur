@@ -1,4 +1,13 @@
 GIT
+  remote: https://github.com/conjurinc/conjur-policy-parser.git
+  revision: d3f027a5683d1e2cabae018183681d9d1a7021d6
+  branch: policy-factory
+  specs:
+    conjur-policy-parser (3.0.4)
+      activesupport (>= 4.2)
+      safe_yaml
+
+GIT
   remote: https://github.com/cyberark/conjur-api-ruby.git
   revision: 58df243255fbd1858c493165919740c4abf7e980
   branch: policy-factory
@@ -6,15 +15,6 @@ GIT
     conjur-api (5.3.3)
       activesupport
       rest-client
-
-GIT
-  remote: https://github.com/cyberark/conjur-policy-parser.git
-  revision: d3f027a5683d1e2cabae018183681d9d1a7021d6
-  branch: policy-factory
-  specs:
-    conjur-policy-parser (3.0.4)
-      activesupport (>= 4.2)
-      safe_yaml
 
 GEM
   remote: https://rubygems.org/
