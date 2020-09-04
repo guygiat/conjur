@@ -3,7 +3,7 @@ GIT
   revision: 58df243255fbd1858c493165919740c4abf7e980
   branch: policy-factory
   specs:
-    conjur-api (5.3.2)
+    conjur-api (5.3.3)
       activesupport
       rest-client
 
