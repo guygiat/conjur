@@ -14,5 +14,5 @@ Feature: Variables can be provisioned as RSA private keys
     Then I can fetch a secret from variable resource "provisioned/rsa-private-key"
     And the result contains:
     """
-    -----BEGIN RSA PRIVATE KEY-----
+    -----BEGIN PRIVATE KEY-----
     """
