@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'util/multipart'
+
 # This controller is responsible for creating host records using
 # host factory tokens for authorization.
 class PolicyFactoriesController < ApplicationController
@@ -144,20 +146,19 @@ class PolicyFactoriesController < ApplicationController
   end
 
   def load_policy(load_to, policy_text, policy_context)
-
     policy_version = PolicyVersion.new(
-      role: current_user, 
-      policy: load_to, 
-      policy_text: policy_text
+      role: current_user,
+      policy: load_to,
+      policy_text: policy_text,
+      client_ip: request.ip
     )
-    policy_version.perform_automatic_deletion = false
     policy_version.delete_permitted = false
-    policy_version.update_permitted = true
-    policy_version.save
-    loader = Loader::Orchestrate.new(policy_version, context: policy_context)
-    loader.load
+    policy = policy_version.save
 
-    created_roles = loader.new_roles.select do |role|
+    policy_action = Loader::CreatePolicy.from_policy(policy, context: policy_context)
+    policy_action.call
+
+    created_roles = policy_action.new_roles.select do |role|
       %w(user host).member?(role.kind)
     end.inject({}) do |memo, role|
       credentials = Credentials[role: role] || Credentials.create(role: role)
