@@ -41,11 +41,11 @@ function finish {
     touch "output/$PLATFORM-authn-k8s-logs.txt"  # so Jenkins artifact collection doesn't fail
   }
 
-  #echo 'Removing namespace $CONJUR_AUTHN_K8S_TEST_NAMESPACE'
-  #echo '-----'
+  echo 'Removing namespace $CONJUR_AUTHN_K8S_TEST_NAMESPACE'
+  echo '-----'
 
-  #oc adm policy remove-scc-from-user anyuid -z default
-  #oc --ignore-not-found=true delete project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
+  oc adm policy remove-scc-from-user anyuid -z default
+  oc --ignore-not-found=true delete project $CONJUR_AUTHN_K8S_TEST_NAMESPACE
 }
 trap finish EXIT
 
@@ -67,12 +67,9 @@ function main() {
 
   copyConjurPolicies
   loadConjurPolicies
-
   launchInventoryServices
 
   runTests
-  echo "Dvir"
-  sleep 10000
 }
 
 function sourceFunctions() {
@@ -230,8 +227,7 @@ function runTests() {
 }
 
 retrieve_pod() {
-  #oc get pods -l app=$1 -o json | jq -r '.items[] | [.metadata.name]'
-    oc get pods -l app=$1 -o=jsonpath='{.items[].metadata.name}'
+  oc get pods -l app=$1 -o=jsonpath='{.items[].metadata.name}'
 }
 
 main
