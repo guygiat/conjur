@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   if the environment variable is not present, rather than attempting to use the empty string value. [cyberark/conjur#1841](https://github.com/cyberark/conjur/issues/1841)
 
 ### Changed
+- Conjur now raises an ExecCommandError error instead of a CertInstallationError
+  error in case it failed to install the client certificate during authn-k8s.
+  [cyberark/conjur#1860](https://github.com/cyberark/conjur/issues/1860)
 - The "inject_client_cert" request now returns 202 Accepted instead of 200 OK to
   indicate that the cert injection has started but not necessarily completed.
   [cyberark/conjur#1848](https://github.com/cyberark/conjur/issues/1848)

@@ -12,12 +12,11 @@ RSpec.describe 'Authentication::AuthnK8s::CopyTextToFileInContainer' do
   let(:content) { "Content" }
   let(:mode) { "Mode" }
 
-  let(:kube_exec) { double("KubeExec") }
+  let(:execute_command_in_container) { double("ExecuteCommandInContainer") }
 
   let(:k8s_object_lookup_instance) { double("K8sObjectLookupInstance") }
-  let(:k8s_object_lookup) { double("K8sObjectLookup") }
   let(:k8s_object_lookup) do
-    double('k8s_object_lookup').tap do |k8s_object_lookup|
+    double('K8sObjectLookup').tap do |k8s_object_lookup|
       allow(k8s_object_lookup).to receive(:new)
         .with(webservice)
         .and_return(k8s_object_lookup_instance)
@@ -25,15 +24,15 @@ RSpec.describe 'Authentication::AuthnK8s::CopyTextToFileInContainer' do
   end
 
   before(:each) do
-    allow(kube_exec)
+    allow(execute_command_in_container)
       .to receive(:call)
   end
 
   context "Calling CopyTextToFileInContainer" do
     subject do
       ::Authentication::AuthnK8s::CopyTextToFileInContainer.new(
-        kube_exec:         kube_exec,
-        k8s_object_lookup: k8s_object_lookup
+        execute_command_in_container: execute_command_in_container,
+        k8s_object_lookup:            k8s_object_lookup
       ).call(
         webservice:    webservice,
         pod_namespace: pod_namespace,
@@ -49,7 +48,7 @@ RSpec.describe 'Authentication::AuthnK8s::CopyTextToFileInContainer' do
       expect { subject }.to_not raise_error
     end
 
-    expected_body = "\n#!/bin/sh\n" \
+    expected_body = "#!/bin/sh\n" \
                     "set -e\n\n" \
                     "cleanup() {\n" \
                     "  rm -f \"path/to/file.tmp\"\n" \
@@ -62,8 +61,8 @@ RSpec.describe 'Authentication::AuthnK8s::CopyTextToFileInContainer' do
                     "}\n\n" \
                     "set_file_content > \"${TMPDIR:-/tmp}/conjur_set_file_content.log\" 2>&1\n"
 
-    it "calls kube_exec with expected parameters" do
-      expect(kube_exec)
+    it "calls execute_command_in_container with expected parameters" do
+      expect(execute_command_in_container)
         .to receive(:call)
           .with(
             hash_including(
