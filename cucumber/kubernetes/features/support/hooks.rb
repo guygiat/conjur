@@ -28,3 +28,26 @@ Before do
     end
   end
 end
+
+After('@ssl_dir_perm') do
+  # TODO: get this dynamically?
+  object_id = "app=inventory-pod"
+  container_name = "authenticator"
+
+  find_matching_pod(object_id)
+
+  @pod.spec.containers.each do |container|
+    next unless container.name == container_name
+
+    Authentication::AuthnK8s::ExecuteCommandInContainer.new.call(
+      k8s_object_lookup: Authentication::AuthnK8s::K8sObjectLookup.new,
+      pod_namespace: @pod.metadata.namespace,
+      pod_name: @pod.metadata.name,
+      container: container_name,
+      cmds: %w(chmod 777 /etc/conjur/ssl),
+      body: "",
+      stdin: false
+    )
+  end
+end
+
