@@ -29,3 +29,8 @@ Feature: Errors emitted by the login method.
   Scenario: it raises an error when logging in from a namespace which does not match the one configured in the host.
     When I login to pod matching "app=inventory-deployment" to authn-k8s as "incorrect-namespace/*/*" with prefix "host/conjur/authn-k8s/minikube/apps"
     Then the HTTP status is "401"
+
+  Scenario: Cert injection errors are written to a file in the client container
+    Given I make ssl dir non-writable in container "authenticator" of pod matching "app=inventory-pod"
+    When I login to pod matching "app=inventory-pod" to authn-k8s as "*/*"
+    Then the cert injection logs exist in the client container

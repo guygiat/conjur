@@ -103,3 +103,25 @@ When(/^the certificate is valid for 3 days$/) do ||
   certificate = OpenSSL::X509::Certificate.new(@cert)
   expect(certificate.not_after - certificate.not_before).to eq(3 * 24 * 60 * 60)
 end
+
+Given(/^I make ssl dir non-writable in container "([^"]*)" of pod matching "([^"]*)"$/) do |container_name, object_id|
+  find_matching_pod(object_id)
+
+  @pod.spec.containers.each do |container|
+    next unless container.name == container_name
+
+    Authentication::AuthnK8s::ExecuteCommandInContainer.new.call(
+      k8s_object_lookup: Authentication::AuthnK8s::K8sObjectLookup.new,
+      pod_namespace: @pod.metadata.namespace,
+      pod_name: @pod.metadata.name,
+      container: container_name,
+      cmds: %w(chmod 555 /etc/conjur/ssl),
+      body: "",
+      stdin: false
+    )
+  end
+end
+
+Then(/^the cert injection logs exist in the client container$/) do
+  expect(@cert_injection_logs).not_to be_empty
+end
