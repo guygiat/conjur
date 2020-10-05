@@ -115,7 +115,8 @@ Given(/^I make ssl dir non-writable in container "([^"]*)" of pod matching "([^"
       pod_namespace: @pod.metadata.namespace,
       pod_name: @pod.metadata.name,
       container: container_name,
-      cmds: %w(chmod 555 /etc/conjur/ssl),
+      #cmds: %w(chmod 555 /etc/conjur/ssl),
+      cmds: %w(echo foo),
       body: "",
       stdin: false
     )

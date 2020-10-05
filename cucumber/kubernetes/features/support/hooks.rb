@@ -34,10 +34,13 @@ After('@ssl_dir_perm') do
   object_id = "app=inventory-pod"
   container_name = "authenticator"
 
+  puts "setting ssl dir pem 1"
   find_matching_pod(object_id)
 
   @pod.spec.containers.each do |container|
     next unless container.name == container_name
+
+    puts "setting ssl dir pem 2"
 
     Authentication::AuthnK8s::ExecuteCommandInContainer.new.call(
       k8s_object_lookup: Authentication::AuthnK8s::K8sObjectLookup.new,
@@ -48,6 +51,9 @@ After('@ssl_dir_perm') do
       body: "",
       stdin: false
     )
+
+    puts "setting ssl dir pem 3"
+
   end
 end
 
