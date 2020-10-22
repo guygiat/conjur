@@ -2,6 +2,7 @@ FROM registry.redhat.io/ubi8/ubi
 
 EXPOSE 8080
 ARG BUNDLER_VERSION=2.1.4
+ARG VERSION
 
 ENV PORT=8080 \
     LOG_DIR=/opt/conjur-server/log \
